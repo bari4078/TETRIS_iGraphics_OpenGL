@@ -1,4 +1,7 @@
 # include "iGraphics.h"
+#include <time.h>
+#include <stdlib.h>
+
 
 struct polygons
 {
@@ -34,7 +37,8 @@ struct polygons
 			},
 			
 	};
-int chosen_poly_no=3;
+
+int chosen_poly_no = rand() % 4;
 int n = polygon[chosen_poly_no].vertices;
 
 double poly_x[10];
@@ -43,6 +47,29 @@ double poly_y[10];
 double shift_x = 0;
 double shift_y = 0;
 
+
+struct block
+{
+    double x;
+    double y;
+} occupied_blocks[300];
+
+int no_blocks=0;
+
+void spawn()
+{	
+	chosen_poly_no = rand() % 4;
+	
+	shift_x = 0;
+	shift_y = 0;
+	n = polygon[chosen_poly_no].vertices;
+
+	for (int i = 0; i < n; i++)
+	{
+		poly_x[i] = polygon[chosen_poly_no].base_x[i];
+		poly_y[i] = polygon[chosen_poly_no].base_y[i];
+	}
+}
 //brings the polygon down automatically
 void gravity();
 
@@ -77,20 +104,30 @@ int collision_right(double poly_x[])
 	}
 	return collision;
 }
-//bottom collision check ---parameter: y co-ordinate array of vertices
-int collision_bottom(double poly_x[])
+
+int collision_grid_x(double poly_x[],double poly_y[])
 {
-	int i;
+	int i,j;
 	int collision=0;
 	for(i=0;i<n;i++)
 	{
-		if(poly_x[i]<=20)
+		if(poly_y[i]<=20)
 		{
-			collision=1;
-			break;
+			return 1;
 		}
 	}
-	return collision;
+	for(i=0;i<no_blocks;i++)
+	{
+		for(j=0; j<n;j++)
+		{
+			if(poly_x[j] == occupied_blocks[i].x && poly_y[j] == occupied_blocks[i].y)
+			{
+				collision++;
+				if(collision >= 2) return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 
@@ -107,7 +144,7 @@ void iDraw() {
 		iText(650, 172, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
 		iRectangle(630,20,200,150);
 
-	//stright tetromino
+	//picked tetromino
 		for (int i = 0; i < n; i++)
 		{
 			poly_x[i] = polygon[chosen_poly_no].base_x[i] + shift_x;
@@ -117,6 +154,13 @@ void iDraw() {
 		iSetColor(polygon[chosen_poly_no].r, polygon[chosen_poly_no].g, polygon[chosen_poly_no].b);
 		iFilledPolygon(poly_x, poly_y, n);
 
+	//drawing occupied grid
+		iSetColor(77, 19, 0);
+		for (int i = 0; i < no_blocks; i++)
+		{
+			iFilledRectangle(occupied_blocks[i].x, occupied_blocks[i].y, 28, 28);
+		}
+	
 	//big-grid
 	//each square is 28 by 28
 		iSetColor(255, 255, 255);
@@ -159,19 +203,20 @@ void iMouse(int button, int state, int mx, int my) {
 	key- holds the ASCII value of the key pressed.
 	*/
 void iKeyboard(unsigned char key) {
+	int has_collided_grid = collision_grid_x(poly_x,poly_y);
 	if (key == 'w')
 	{
 		
 	}
-	else if ((key == 'a' || key == 'A') && (!collision_left(poly_x)))
+	else if ((key == 'a' || key == 'A') && (!collision_left(poly_x) && !has_collided_grid))
 	{
 		shift_x = shift_x - 28;
 	}
-	else if ((key == 's' || key == 'S') && (!collision_bottom(poly_y)))
+	else if ((key == 's' || key == 'S') && (!has_collided_grid))
 	{
 		shift_y = shift_y - 28;
 	}
-	else if ((key == 'd' || key == 'D') && (!collision_right(poly_x)))
+	else if ((key == 'd' || key == 'D') && (!collision_right(poly_x) && !has_collided_grid))
 	{
 		shift_x = shift_x + 28;
 	}
@@ -187,8 +232,8 @@ void iKeyboard(unsigned char key) {
 	GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP,
 	GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
 	*/
-void iSpecialKeyboard(unsigned char key) {
-
+void iSpecialKeyboard(unsigned char key)
+{
 	if (key == GLUT_KEY_END) {
 		exit(0);
 	}
@@ -198,6 +243,8 @@ void iSpecialKeyboard(unsigned char key) {
 
 int main() {
 	//place your own initialization codes here.
+	srand(time(NULL));
+
 	int fall_delay = 800;
 	iSetTimer( fall_delay, gravity);
 
@@ -207,6 +254,16 @@ int main() {
 
 void gravity()
 {
-	if(!collision_bottom(poly_y))
+	if(!collision_grid_x(poly_x,poly_y))
 		shift_y = shift_y - 28;
+	else
+	{
+		for(int i=0; i<n ; i++)
+		{
+			occupied_blocks[no_blocks].x = poly_x[i];
+			occupied_blocks[no_blocks].y = poly_y[i];
+			no_blocks++;
+		}
+		spawn();
+	}
 }
