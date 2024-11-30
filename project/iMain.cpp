@@ -2,47 +2,63 @@
 #include <time.h>
 #include <stdlib.h>
 
+#define screen_width 1100
+#define screen_height 619
+
 
 struct polygons
 {
-	double base_x[10];
-	double base_y[10];
+	double base_x[4];
+	double base_y[4];
 	int r,g,b;
-	int vertices;
 } polygon[7] =
 	{
 			{	//straight tetromino
-				{384, 412, 440, 468, 496, 496, 468, 440, 412, 384}, 
-				{552, 552, 552, 552, 552, 580, 580, 580, 580, 580}, 
-					135, 206, 235,
-					10
+				{384, 412, 440, 468}, 
+				{552, 552, 552, 552}, 
+					135, 206, 235
 			},
 			{	//square tetromino
-				{412,440,468,468,468,440,412,412}, 
-				{524,524,524,552,580,580,580,552}, 
-					255, 179, 67,
-					8
+				{412,440,440,412}, 
+				{524,524,552,552}, 
+					255, 179, 67
 			}, 
 			{	//left L tetromino
-				{440,412,412,440,468,468,468,468,440,440}, 
-				{524,524,496,496,496,524,552,580,580,552}, 
-					0, 0, 139,
-					10
+				{412,440,440,440}, 
+				{496,496,524,552}, 
+					65, 105, 225
 			},
 			{	//right L tetromino
-				{440,440,440,412,412,412,412,440,468,468}, 
-				{524,552,580,580,552,524,496,496,496,524}, 
-					255, 222, 33,
-					10
+				{412,412,412,440}, 
+				{552,524,496,496}, 
+					253, 225, 100
 			},
+			{	//T shaped tetromino
+				{384,412,440,412}, 
+				{552,552,552,524}, 
+					207, 159 , 255
+			},
+			{	// Z shaped tetromino
+				{384,412,412,440}, 
+				{552,552,524,524}, 
+					238, 109 , 81
+			},
+			{	// mirror Z shaped tetromino
+				{412,440,384,412}, 
+				{552,552,524,524}, 
+					0, 103 , 79
+			},
+
 			
 	};
 
-int chosen_poly_no = rand() % 4;
-int n = polygon[chosen_poly_no].vertices;
+int game_stat = 0;
 
-double poly_x[10];
-double poly_y[10];
+int chosen_poly_no = rand() % 7;
+int n = 4;
+
+double poly_x[4];
+double poly_y[4];
 
 double shift_x = 0;
 double shift_y = 0;
@@ -52,7 +68,7 @@ struct block
 {
     double x;
     double y;
-} occupied_blocks[300];
+} occupied_blocks[210];
 
 int no_blocks=0;
 
@@ -62,7 +78,6 @@ void spawn()
 	
 	shift_x = 0;
 	shift_y = 0;
-	n = polygon[chosen_poly_no].vertices;
 
 	for (int i = 0; i < n; i++)
 	{
@@ -77,38 +92,32 @@ void gravity();
 // left collision check ---parameter: x co-ordinate array of vertices
 int collision_left(double poly_x[])
 {
-	int i;
-	int collision=0;
-	for(i=0;i<n;i++)
+	for(int i=0; i < n ; i++)
 	{
 		if(poly_x[i]<=300)
 		{
-			collision=1;
-			break;
+			return 1;
 		}
 	}
-	return collision;
+	return 0;
 }
 //right collision check ---parameter: x co-ordinate array of vertices
 int collision_right(double poly_x[])
 {
-	int i;
-	int collision=0;
-	for(i=0;i<n;i++)
+	for(int i=0;i<n;i++)
 	{
-		if(poly_x[i]>=580)
+		if(poly_x[i]+28 >= 580)
 		{
-			collision=1;
-			break;
+			return 1;
 		}
 	}
-	return collision;
+	return 0;
 }
 
 int collision_grid_x(double poly_x[],double poly_y[])
 {
 	int i,j;
-	int collision=0;
+	int collision_up=0,collision_down=0;
 	for(i=0;i<n;i++)
 	{
 		if(poly_y[i]<=20)
@@ -116,15 +125,13 @@ int collision_grid_x(double poly_x[],double poly_y[])
 			return 1;
 		}
 	}
-	for(i=0;i<no_blocks;i++)
+	
+	for(i=0; i < n ; i++)
 	{
-		for(j=0; j<n;j++)
+		for(j=0; j<= no_blocks; j++)
 		{
-			if(poly_x[j] == occupied_blocks[i].x && poly_y[j] == occupied_blocks[i].y)
-			{
-				collision++;
-				if(collision >= 2) return 1;
-			}
+			if((poly_x[i] == occupied_blocks[j].x) && (abs(poly_y[i] - occupied_blocks[j].y) == 28))
+				return 1;
 		}
 	}
 	return 0;
@@ -134,6 +141,12 @@ int collision_grid_x(double poly_x[],double poly_y[])
 void iDraw() {
 	iClear();
 
+	if(game_stat == 0)
+	{
+		iShowBMP(45,0,"home_menu_1.bmp");
+	}
+	else
+	{
 	//background images
 	iShowBMP(0,0,"tetris.jpg");
 	iShowBMP(630,150,"tetris_2.jpg");
@@ -152,7 +165,10 @@ void iDraw() {
 		}
 
 		iSetColor(polygon[chosen_poly_no].r, polygon[chosen_poly_no].g, polygon[chosen_poly_no].b);
-		iFilledPolygon(poly_x, poly_y, n);
+		for(int i=0; i < n; i++)
+		{
+			iFilledRectangle(poly_x[i],poly_y[i],28,28);
+		}
 
 	//drawing occupied grid
 		iSetColor(77, 19, 0);
@@ -176,6 +192,7 @@ void iDraw() {
 		{
 			iLine(300,48+28*i,580,48+28*i);
 		}
+	}
 }
 
 /*
@@ -206,7 +223,7 @@ void iKeyboard(unsigned char key) {
 	int has_collided_grid = collision_grid_x(poly_x,poly_y);
 	if (key == 'w')
 	{
-		
+		//will rotate the polygons
 	}
 	else if ((key == 'a' || key == 'A') && (!collision_left(poly_x) && !has_collided_grid))
 	{
@@ -248,7 +265,7 @@ int main() {
 	int fall_delay = 800;
 	iSetTimer( fall_delay, gravity);
 
-	iInitialize(1100, 619, "TETRIS");
+	iInitialize(screen_width, screen_height, "TETRIS");
 	return 0;
 }
 
