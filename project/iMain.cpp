@@ -5,7 +5,6 @@
 #define screen_width 1100
 #define screen_height 619
 
-
 struct polygons
 {
 	double base_x[4];
@@ -52,9 +51,16 @@ struct polygons
 			
 	};
 
-int game_stat = 0;
+struct button_co_ord
+{
+	int x;
+	int y;
+} button_coordinate[2];
+
+int game_state = -1;
 
 int chosen_poly_no = rand() % 7;
+int up_next_poly = rand() % 7;
 int n = 4;
 
 double poly_x[4];
@@ -74,7 +80,8 @@ int no_blocks=0;
 
 void spawn()
 {	
-	chosen_poly_no = rand() % 4;
+	chosen_poly_no = up_next_poly;
+	up_next_poly = rand() % 7;
 	
 	shift_x = 0;
 	shift_y = 0;
@@ -141,15 +148,19 @@ int collision_grid_x(double poly_x[],double poly_y[])
 void iDraw() {
 	iClear();
 
-	if(game_stat == 0)
+	int i;
+	if(game_state == -1)
 	{
 		iShowBMP(45,0,"home_menu_1.bmp");
+
+		iShowBMP(button_coordinate[0].x,button_coordinate[0].y,"start.bmp");
+		iShowBMP(button_coordinate[1].x,button_coordinate[1].y,"exit_button.bmp");
 	}
 	else
 	{
 	//background images
-	iShowBMP(0,0,"tetris.jpg");
-	iShowBMP(630,150,"tetris_2.jpg");
+		iShowBMP(0,0,"tetris.bmp");
+		iShowBMP(630,150,"tetris_2.bmp");
 
 
 	//tetromino preview
@@ -157,22 +168,29 @@ void iDraw() {
 		iText(650, 172, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
 		iRectangle(630,20,200,150);
 
+		//up next tetromino
+		iSetColor(polygon[up_next_poly].r,polygon[up_next_poly].g,polygon[up_next_poly].b);
+			for(i=0;i<n;i++)
+			{
+				iFilledRectangle(polygon[up_next_poly].base_x[i] + 290,polygon[up_next_poly].base_y[i]-450,28,28);
+			}
+
 	//picked tetromino
-		for (int i = 0; i < n; i++)
+		for (i = 0; i < n; i++)
 		{
 			poly_x[i] = polygon[chosen_poly_no].base_x[i] + shift_x;
 			poly_y[i] = polygon[chosen_poly_no].base_y[i] + shift_y;
 		}
 
 		iSetColor(polygon[chosen_poly_no].r, polygon[chosen_poly_no].g, polygon[chosen_poly_no].b);
-		for(int i=0; i < n; i++)
+		for(i=0; i < n; i++)
 		{
 			iFilledRectangle(poly_x[i],poly_y[i],28,28);
 		}
 
 	//drawing occupied grid
 		iSetColor(77, 19, 0);
-		for (int i = 0; i < no_blocks; i++)
+		for (i = 0; i < no_blocks; i++)
 		{
 			iFilledRectangle(occupied_blocks[i].x, occupied_blocks[i].y, 28, 28);
 		}
@@ -183,12 +201,12 @@ void iDraw() {
 		iRectangle(300, 20, 280, 560);
 		iSetColor(137,148,153);
 		//horizontal lines
-		for(int i=0;i<9;i++)
+		for(i=0;i<9;i++)
 		{
 			iLine(328+i*28,20,328+i*28,580);
 		}
 		//vertical lines
-		for(int i=0;i<19;i++)
+		for(i=0;i<19;i++)
 		{
 			iLine(300,48+28*i,580,48+28*i);
 		}
@@ -209,7 +227,16 @@ void iMouseMove(int mx, int my) {
 	(mx, my) is the position where the mouse pointer is.
 	*/
 void iMouse(int button, int state, int mx, int my) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if((mx >= button_coordinate[0].x && mx <= button_coordinate[0].x + 250) && (my >= button_coordinate[0].y && my <= button_coordinate[0].y + 65))
+		{
+			game_state = 0;
+		}
+		else if((mx >= button_coordinate[1].x && mx <= button_coordinate[1].x + 250) && (my >= button_coordinate[1].y && my <= button_coordinate[1].y + 65))
+		{
+			exit(0);
+		}
 	}
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 	}
@@ -262,8 +289,15 @@ int main() {
 	//place your own initialization codes here.
 	srand(time(NULL));
 
+	//startbutton
+		button_coordinate[0].x = 425;
+		button_coordinate[0].y = 445;
+	//quit button
+		button_coordinate[1].x = 425;
+		button_coordinate[1].y = 350;
+
 	int fall_delay = 800;
-	iSetTimer( fall_delay, gravity);
+	iSetTimer(fall_delay, gravity);
 
 	iInitialize(screen_width, screen_height, "TETRIS");
 	return 0;
