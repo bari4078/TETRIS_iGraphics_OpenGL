@@ -1,6 +1,7 @@
 # include "iGraphics.h"
 #include <time.h>
 #include <stdlib.h>
+//#include <windows.h>
 
 #define screen_width 1100
 #define screen_height 619
@@ -151,16 +152,16 @@ void iDraw() {
 	int i;
 	if(game_state == -1)
 	{
-		iShowBMP(45,0,"home_menu_1.bmp");
-
-		iShowBMP(button_coordinate[0].x,button_coordinate[0].y,"start.bmp");
-		iShowBMP(button_coordinate[1].x,button_coordinate[1].y,"exit_button.bmp");
+		iShowBMP(45,0,"resourse\\home_menu_1.bmp");
+		//PlaySound("resourse\\Tetris_Main_Menu_Theme.wav", NULL , SND_LOOP);
+		iShowBMP(button_coordinate[0].x,button_coordinate[0].y,"resourse\\start.bmp");
+		iShowBMP(button_coordinate[1].x,button_coordinate[1].y,"resourse\\exit_button.bmp");
 	}
 	else
 	{
 	//background images
-		iShowBMP(0,0,"tetris.bmp");
-		iShowBMP(630,150,"tetris_2.bmp");
+		iShowBMP(0,0,"resourse\\tetris.bmp");
+		iShowBMP(630,150,"resourse\\tetris_2.bmp");
 
 
 	//tetromino preview
