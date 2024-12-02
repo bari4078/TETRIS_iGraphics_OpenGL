@@ -1,10 +1,18 @@
 # include "iGraphics.h"
 #include <time.h>
 #include <stdlib.h>
-//#include <windows.h>
+#include <windows.h>
 
 #define screen_width 1100
 #define screen_height 619
+
+#define little_block 28
+
+#define grid_height 560
+#define grid_bottom 20
+
+#define grid_left 300
+#define grid_width 280
 
 struct polygons
 {
@@ -59,6 +67,10 @@ struct button_co_ord
 } button_coordinate[2];
 
 int game_state = -1;
+//game state -1: main menu
+//game state 0: gameplay
+//game state 1: pause
+//game state 2: game over
 
 int chosen_poly_no = rand() % 7;
 int up_next_poly = rand() % 7;
@@ -75,7 +87,8 @@ struct block
 {
     double x;
     double y;
-} occupied_blocks[210];
+	int r,g,b;
+} occupied_blocks[201];
 
 int no_blocks=0;
 
@@ -93,6 +106,9 @@ void spawn()
 		poly_y[i] = polygon[chosen_poly_no].base_y[i];
 	}
 }
+
+
+
 //brings the polygon down automatically
 void gravity();
 
@@ -114,7 +130,7 @@ int collision_right(double poly_x[])
 {
 	for(int i=0;i<n;i++)
 	{
-		if(poly_x[i]+28 >= 580)
+		if(poly_x[i]+ little_block >= (grid_bottom + grid_height))
 		{
 			return 1;
 		}
@@ -138,7 +154,7 @@ int collision_grid_x(double poly_x[],double poly_y[])
 	{
 		for(j=0; j<= no_blocks; j++)
 		{
-			if((poly_x[i] == occupied_blocks[j].x) && (abs(poly_y[i] - occupied_blocks[j].y) == 28))
+			if((poly_x[i] == occupied_blocks[j].x) && (abs(poly_y[i] - occupied_blocks[j].y) == little_block))
 				return 1;
 		}
 	}
@@ -153,27 +169,34 @@ void iDraw() {
 	if(game_state == -1)
 	{
 		iShowBMP(45,0,"resourse\\home_menu_1.bmp");
-		//PlaySound("resourse\\Tetris_Main_Menu_Theme.wav", NULL , SND_LOOP);
 		iShowBMP(button_coordinate[0].x,button_coordinate[0].y,"resourse\\start.bmp");
 		iShowBMP(button_coordinate[1].x,button_coordinate[1].y,"resourse\\exit_button.bmp");
+	}
+	else if(game_state == 2)
+	{
+		iShowBMP(0,0,"resourse\\game_over.bmp");
+		iText(470,85,"Press 'end' to quit",GLUT_BITMAP_9_BY_15);
+		iText(420,70,"Press 'M' to return to main menu",GLUT_BITMAP_9_BY_15);
+		iText(460,55,"Press 'P' to play again",GLUT_BITMAP_9_BY_15);
 	}
 	else
 	{
 	//background images
 		iShowBMP(0,0,"resourse\\tetris.bmp");
 		iShowBMP(630,150,"resourse\\tetris_2.bmp");
-
+		iSetColor(255, 255, 255);
+		iText(900,70,"Press 'end' to quit",GLUT_BITMAP_9_BY_15);
 
 	//tetromino preview
 		iSetColor(255, 255, 255);
-		iText(650, 172, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
+		iText(650, 175, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
 		iRectangle(630,20,200,150);
 
 		//up next tetromino
 		iSetColor(polygon[up_next_poly].r,polygon[up_next_poly].g,polygon[up_next_poly].b);
 			for(i=0;i<n;i++)
 			{
-				iFilledRectangle(polygon[up_next_poly].base_x[i] + 290,polygon[up_next_poly].base_y[i]-450,28,28);
+				iFilledRectangle(polygon[up_next_poly].base_x[i] + 290,polygon[up_next_poly].base_y[i]-450,little_block,little_block);
 			}
 
 	//picked tetromino
@@ -186,30 +209,30 @@ void iDraw() {
 		iSetColor(polygon[chosen_poly_no].r, polygon[chosen_poly_no].g, polygon[chosen_poly_no].b);
 		for(i=0; i < n; i++)
 		{
-			iFilledRectangle(poly_x[i],poly_y[i],28,28);
+			iFilledRectangle(poly_x[i],poly_y[i],little_block,little_block);
 		}
 
 	//drawing occupied grid
-		iSetColor(77, 19, 0);
 		for (i = 0; i < no_blocks; i++)
 		{
-			iFilledRectangle(occupied_blocks[i].x, occupied_blocks[i].y, 28, 28);
+			iSetColor(occupied_blocks[i].r,occupied_blocks[i].g,occupied_blocks[i].b);
+			iFilledRectangle(occupied_blocks[i].x, occupied_blocks[i].y, little_block, little_block);
 		}
 	
 	//big-grid
-	//each square is 28 by 28
 		iSetColor(255, 255, 255);
-		iRectangle(300, 20, 280, 560);
+		iRectangle(grid_left, grid_bottom, grid_width, grid_height);
 		iSetColor(137,148,153);
 		//horizontal lines
 		for(i=0;i<9;i++)
 		{
-			iLine(328+i*28,20,328+i*28,580);
+			iLine( (grid_left+little_block) + i*little_block , grid_bottom,
+			 		( (grid_left+little_block)) + i*little_block,grid_bottom+grid_height);
 		}
 		//vertical lines
 		for(i=0;i<19;i++)
 		{
-			iLine(300,48+28*i,580,48+28*i);
+			iLine(grid_left,48+little_block*i,(grid_bottom+grid_height),48+little_block*i);
 		}
 	}
 }
@@ -220,7 +243,6 @@ void iDraw() {
 	*/
 void iMouseMove(int mx, int my) {
 	printf("x = %d, y= %d\n",mx,my);
-	//place your codes here
 }
 
 /*
@@ -255,17 +277,17 @@ void iKeyboard(unsigned char key) {
 	}
 	else if ((key == 'a' || key == 'A') && (!collision_left(poly_x) && !has_collided_grid))
 	{
-		shift_x = shift_x - 28;
+		shift_x = shift_x - little_block;
 	}
 	else if ((key == 's' || key == 'S') && (!has_collided_grid))
 	{
-		shift_y = shift_y - 28;
+		shift_y = shift_y - little_block;
 	}
 	else if ((key == 'd' || key == 'D') && (!collision_right(poly_x) && !has_collided_grid))
 	{
-		shift_x = shift_x + 28;
+		shift_x = shift_x + little_block;
 	}
-	//place your codes for other keys here
+	
 }
 
 /*
@@ -287,7 +309,6 @@ void iSpecialKeyboard(unsigned char key)
 
 
 int main() {
-	//place your own initialization codes here.
 	srand(time(NULL));
 
 	//startbutton
@@ -306,15 +327,29 @@ int main() {
 
 void gravity()
 {
+	int i;
 	if(!collision_grid_x(poly_x,poly_y))
-		shift_y = shift_y - 28;
+		shift_y = shift_y - little_block;
 	else
 	{
-		for(int i=0; i<n ; i++)
+		for(i=0; i<n ; i++)
 		{
 			occupied_blocks[no_blocks].x = poly_x[i];
 			occupied_blocks[no_blocks].y = poly_y[i];
+
+			occupied_blocks[no_blocks].r = polygon[chosen_poly_no].r;
+			occupied_blocks[no_blocks].g = polygon[chosen_poly_no].g;
+			occupied_blocks[no_blocks].b = polygon[chosen_poly_no].b;
+
 			no_blocks++;
+		}
+		for(i=0;i <= no_blocks;i++)
+		{
+			if(occupied_blocks[i].y >= 552)
+			{
+				game_state = 2;
+				return;
+			}
 		}
 		spawn();
 	}
