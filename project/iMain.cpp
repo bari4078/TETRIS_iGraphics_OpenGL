@@ -1,4 +1,4 @@
-# include "iGraphics.h"
+#include "iGraphics.h"
 #include <time.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -13,6 +13,8 @@
 
 #define grid_left 300
 #define grid_width 280
+
+
 
 struct polygons
 {
@@ -56,8 +58,7 @@ struct polygons
 				{552,552,524,524}, 
 					0, 103 , 79
 			},
-
-			
+	
 	};
 
 struct button_co_ord
@@ -71,7 +72,7 @@ int game_state = -1;
 //game state 0: gameplay
 //game state 1: pause
 //game state 2: game over
-
+//game state 3: game complete
 
 int chosen_poly_no = rand() % 7;
 int up_next_poly = rand() % 7;
@@ -96,6 +97,10 @@ struct block
 
 int no_blocks=0;
 
+int score = 0;
+char score_text[50];
+
+
 void spawn()
 {	
 	chosen_poly_no = up_next_poly;
@@ -111,6 +116,8 @@ void spawn()
 		poly_x[i] = players_poly.base_x[i];
 		poly_y[i] = players_poly.base_y[i];
 	}
+
+	return;
 }
 
 
@@ -147,7 +154,6 @@ int collision_right(double poly_x[])
 int collision_grid_x(double poly_x[],double poly_y[])
 {
 	int i,j;
-	int collision_up=0,collision_down=0;
 	for(i=0;i<n;i++)
 	{
 		if(poly_y[i]<=20)
@@ -216,15 +222,15 @@ void rotate()
 	{	
 		if(position == 0)
 		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 440;
-			temp_poly.base_x[3] = 440;
+			temp_poly.base_x[0] = 440;
+			temp_poly.base_x[1] = 440;
+			temp_poly.base_x[2] = 412;
+			temp_poly.base_x[3] = 384;
 
-			temp_poly.base_y[0] = 552;
+			temp_poly.base_y[0] = 524;
 			temp_poly.base_y[1] = 552;
 			temp_poly.base_y[2] = 552;
-			temp_poly.base_y[3] = 524;
+			temp_poly.base_y[3] = 552;
 
 			position = (position + 1) % 4;
 			players_poly = temp_poly;
@@ -232,15 +238,15 @@ void rotate()
 		}
 		else if(position == 1)
 		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 384;
-			temp_poly.base_x[2] = 384;
+			temp_poly.base_x[0] = 440;
+			temp_poly.base_x[1] = 412;
+			temp_poly.base_x[2] = 412;
 			temp_poly.base_x[3] = 412;
 
-			temp_poly.base_y[0] = 496;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 552;
-			temp_poly.base_y[3] = 552;
+			temp_poly.base_y[0] = 552;
+			temp_poly.base_y[1] = 552;
+			temp_poly.base_y[2] = 524;
+			temp_poly.base_y[3] = 496;
 			
 			position = (position + 1) % 4;
 			players_poly = temp_poly;
@@ -248,12 +254,12 @@ void rotate()
 		}
 		else if(position == 2)
 		{	
-			temp_poly.base_x[0] = 440;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 384;
-			temp_poly.base_x[3] = 384;
+			temp_poly.base_x[0] = 384;
+			temp_poly.base_x[1] = 384;
+			temp_poly.base_x[2] = 412;
+			temp_poly.base_x[3] = 440;
 
-			temp_poly.base_y[0] = 452;
+			temp_poly.base_y[0] = 552;
 			temp_poly.base_y[1] = 524;
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 524;
@@ -279,6 +285,7 @@ void rotate()
 			return;
 		}
 	}
+	
 
 	//right L tetromino
 	else if(chosen_poly_no == 3)
@@ -491,19 +498,80 @@ void rotate()
 			return;
 		}
 	}
+
 }
+
+
+void clear_row() {
+    int row, col, i, j;
+    int full_row;
+
+    for(row = grid_bottom; row < (grid_bottom + grid_height); row += little_block)
+	{
+        full_row = 1;
+
+        for(col = grid_left; col < (grid_left + grid_width); col += little_block)
+		{
+            int found = 0;
+            for(i = 0; i < no_blocks; i++)
+			{
+                if(occupied_blocks[i].x == col && occupied_blocks[i].y == row) 
+				{
+                    found = 1;
+                    break;
+                }
+            }
+            if(!found) 
+			{
+                full_row = 0; 
+                break;
+            }
+        }
+
+        if(full_row) 
+		{
+			score = score + 150;
+			
+            for(i = 0; i < no_blocks; i++)
+			{
+                if(occupied_blocks[i].y == row) 
+				{
+                    for(j = i; j < no_blocks - 1; j++) 
+					{
+                        occupied_blocks[j] = occupied_blocks[j + 1];
+                    }
+                    no_blocks--;
+                    i--; 
+                }
+            }
+
+            for(i = 0; i < no_blocks; i++) 
+			{
+                if(occupied_blocks[i].y > row) 
+				{
+                    occupied_blocks[i].y -= little_block;
+                }
+            }
+        }
+    }
+}
+
 
 
 void iDraw() {
 	iClear();
 
 	int i;
+
+	//Main Menu
 	if(game_state == -1)
 	{	//Main Menu
 		iShowBMP(45,0,"resourse\\home_menu_1.bmp");
 		iShowBMP(Mstart_button.x,Mstart_button.y,"resourse\\start.bmp");
 		iShowBMP(Mexit_button.x,Mexit_button.y,"resourse\\exit.bmp");
 	}
+
+	//Pause Menu
 	else if(game_state == 1)
 	{	//Pause Menu
 		iShowBMP(Presume_button.x,Presume_button.y,"resourse\\resume.bmp");
@@ -512,6 +580,8 @@ void iDraw() {
 		iShowBMP(0,0,"resourse\\tetris.bmp");
 		iShowBMP(630,150,"resourse\\tetris_2.bmp");
 	}
+
+	//Game Over
 	else if(game_state == 2)
 	{	//Game Over
 		iShowBMP(0,0,"resourse\\game_over.bmp");
@@ -519,21 +589,28 @@ void iDraw() {
 		iText(420,70,"Press 'M' to return to main menu",GLUT_BITMAP_9_BY_15);
 		iText(460,55,"Press 'P' to play again",GLUT_BITMAP_9_BY_15);
 	}
+	
 	else
 	{
 	//background images
+
 		iShowBMP(0,0,"resourse\\tetris.bmp");
 		iShowBMP(630,150,"resourse\\tetris_2.bmp");
 		iSetColor(255, 255, 255);
 		iText(900,70,"Press 'end' to QUIT",GLUT_BITMAP_9_BY_15);
 		iText(900,83,"Press 'P' to PAUSE",GLUT_BITMAP_9_BY_15);
 
+		iSetColor(255,255,0);
+		sprintf(score_text, "Score: %d", score);
+		iText(650, 200, score_text,GLUT_BITMAP_HELVETICA_18); 
 	//tetromino preview
+
 		iSetColor(255, 255, 255);
 		iText(650, 175, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
 		iRectangle(630,20,200,150);
 
 		//up next tetromino
+
 		iSetColor(polygon[up_next_poly].r,polygon[up_next_poly].g,polygon[up_next_poly].b);
 			for(i=0;i<n;i++)
 			{
@@ -616,7 +693,7 @@ void iMouse(int button, int state, int mx, int my) {
 			}
 			else if((mx >= Prestart_button.x && mx <= Prestart_button.x + 250) && (my >= Prestart_button.y && my <= Prestart_button.y + 65))
 			{
-				game_state = 0;
+				game_state = 0;	
 			}
 		}
 		
@@ -732,6 +809,7 @@ void gravity()
 				return;
 			}
 		}
+		clear_row();
 		spawn();
 	}
 }
