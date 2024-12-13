@@ -1,4 +1,4 @@
-#include "iGraphics.h"
+# include "iGraphics.h"
 #include <time.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -13,8 +13,6 @@
 
 #define grid_left 300
 #define grid_width 280
-
-
 
 struct polygons
 {
@@ -58,27 +56,24 @@ struct polygons
 				{552,552,524,524}, 
 					0, 103 , 79
 			},
-	
+
+			
 	};
 
 struct button_co_ord
 {
 	int x;
 	int y;
-} Mstart_button,Mexit_button,Pexit_button,Presume_button,Prestart_button;
+} button_coordinate[2];
 
 int game_state = -1;
 //game state -1: main menu
 //game state 0: gameplay
 //game state 1: pause
 //game state 2: game over
-//game state 3: game complete
 
 int chosen_poly_no = rand() % 7;
 int up_next_poly = rand() % 7;
-struct polygons players_poly = polygon[chosen_poly_no];
-int position = 0;
-
 int n = 4;
 
 double poly_x[4];
@@ -101,19 +96,15 @@ void spawn()
 {	
 	chosen_poly_no = up_next_poly;
 	up_next_poly = rand() % 7;
-	players_poly = polygon[chosen_poly_no];
-	position = 0;
-
+	
 	shift_x = 0;
 	shift_y = 0;
 
 	for (int i = 0; i < n; i++)
 	{
-		poly_x[i] = players_poly.base_x[i];
-		poly_y[i] = players_poly.base_y[i];
+		poly_x[i] = polygon[chosen_poly_no].base_x[i];
+		poly_y[i] = polygon[chosen_poly_no].base_y[i];
 	}
-
-	return;
 }
 
 
@@ -150,6 +141,7 @@ int collision_right(double poly_x[])
 int collision_grid_x(double poly_x[],double poly_y[])
 {
 	int i,j;
+	int collision_up=0,collision_down=0;
 	for(i=0;i<n;i++)
 	{
 		if(poly_y[i]<=20)
@@ -170,437 +162,37 @@ int collision_grid_x(double poly_x[],double poly_y[])
 }
 
 
-void rotate()
-{
-	if(chosen_poly_no == 1) return;
-	struct polygons temp_poly = players_poly;
-	
-	//straight tetromino
-	if(chosen_poly_no == 0)
-	{	// straight tetromino
-		if(position == 0)
-		{
-			temp_poly.base_x[0] += 56;
-			temp_poly.base_y[0] += 56;
-
-			temp_poly.base_x[1] += 28;
-			temp_poly.base_y[1] += 28;
-
-			temp_poly.base_x[3] -= 28;
-			temp_poly.base_y[3] -= 28;
-
-			position = (position+1) % 2;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{
-			temp_poly.base_x[0] -= 56;
-			temp_poly.base_y[0] -= 56;
-
-			temp_poly.base_x[1] -= 28;
-			temp_poly.base_y[1] -= 28;
-
-			temp_poly.base_x[3] += 28;
-			temp_poly.base_y[3] += 28;
-
-			position = (position+1) % 2;
-
-			players_poly = temp_poly;
-			return;
-		}
-
-	}
-	
-	//left L tetromino
-	///HAS A NASTY BUG
-	else if(chosen_poly_no == 2)
-	{	
-		if(position == 0)
-		{	
-			temp_poly.base_x[0] = 440;
-			temp_poly.base_x[1] = 440;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 384;
-
-			temp_poly.base_y[0] = 524;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 552;
-			temp_poly.base_y[3] = 552;
-
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{	
-			temp_poly.base_x[0] = 440;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 496;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 2)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 384;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 524;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 3)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 440;
-			temp_poly.base_x[2] = 440;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 496;
-			temp_poly.base_y[1] = 496;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 552;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-	}
-	
-
-	//right L tetromino
-	else if(chosen_poly_no == 3)
-	{	
-		if(position == 0)
-		{	
-			temp_poly.base_x[0] = 440;
-			temp_poly.base_x[1] = 440;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 384;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 524;
-
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 496;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 2)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 384;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 524;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 552;
-			temp_poly.base_y[3] = 552;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 3)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 496;
-			temp_poly.base_y[3] = 496;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-	}
-	
-	//T shaped tetronimo
-	else if(chosen_poly_no == 4)
-	{
-		if(position == 0)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 496;
-			temp_poly.base_y[3] = 524;
-
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 440;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 524;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 552;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 2)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 384;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 496;
-			temp_poly.base_y[3] = 524;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 3)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 440;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 552;
-			temp_poly.base_y[3] = 524;
-			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
-		}
-	}
-
-	//Z shaped tetromino
-	else if(chosen_poly_no == 5)
-	{	
-		if(position == 0)
-		{	
-			temp_poly.base_x[0] = 440;
-			temp_poly.base_x[1] = 440;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 496;
-
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{	
-			temp_poly.base_x[0] = 384;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 412;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 524;
-			
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
-		}
-	}
-
-	//mirror Z shaped tetromino
-	else if(chosen_poly_no == 6)
-	{	
-		if(position == 0)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 412;
-			temp_poly.base_x[2] = 440;
-			temp_poly.base_x[3] = 440;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 524;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 496;
-
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
-		}
-		else if(position == 1)
-		{	
-			temp_poly.base_x[0] = 412;
-			temp_poly.base_x[1] = 440;
-			temp_poly.base_x[2] = 384;
-			temp_poly.base_x[3] = 412;
-
-			temp_poly.base_y[0] = 552;
-			temp_poly.base_y[1] = 552;
-			temp_poly.base_y[2] = 524;
-			temp_poly.base_y[3] = 524;
-			
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
-		}
-	}
-
-}
-
-
-void clear_row() {
-    int row, col, i, j;
-    int full_row;
-
-    for(row = grid_bottom; row < (grid_bottom + grid_height); row += little_block)
-	{
-        full_row = 1;
-
-        for(col = grid_left; col < (grid_left + grid_width); col += little_block)
-		{
-            int found = 0;
-            for(i = 0; i < no_blocks; i++)
-			{
-                if(occupied_blocks[i].x == col && occupied_blocks[i].y == row) 
-				{
-                    found = 1;
-                    break;
-                }
-            }
-            if(!found) 
-			{
-                full_row = 0; 
-                break;
-            }
-        }
-
-        if(full_row) 
-		{
-            for(i = 0; i < no_blocks; i++)
-			{
-                if(occupied_blocks[i].y == row) 
-				{
-                    for(j = i; j < no_blocks - 1; j++) 
-					{
-                        occupied_blocks[j] = occupied_blocks[j + 1];
-                    }
-                    no_blocks--;
-                    i--; 
-                }
-            }
-
-            for(i = 0; i < no_blocks; i++) 
-			{
-                if(occupied_blocks[i].y > row) 
-				{
-                    occupied_blocks[i].y -= little_block;
-                }
-            }
-        }
-    }
-}
-
-
 void iDraw() {
 	iClear();
 
 	int i;
-
-	//Main Menu
 	if(game_state == -1)
-	{	//Main Menu
+	{
 		iShowBMP(45,0,"resourse\\home_menu_1.bmp");
-		iShowBMP(Mstart_button.x,Mstart_button.y,"resourse\\start.bmp");
-		iShowBMP(Mexit_button.x,Mexit_button.y,"resourse\\exit.bmp");
+		iShowBMP(button_coordinate[0].x,button_coordinate[0].y,"resourse\\start.bmp");
+		iShowBMP(button_coordinate[1].x,button_coordinate[1].y,"resourse\\exit_button.bmp");
 	}
-
-	//Pause Menu
-	else if(game_state == 1)
-	{	//Pause Menu
-		iShowBMP(Presume_button.x,Presume_button.y,"resourse\\resume.bmp");
-		iShowBMP(Pexit_button.x,Pexit_button.y,"resourse\\exit.bmp");
-		iShowBMP(Prestart_button.x,Prestart_button.y,"resourse\\restart.bmp");
-		iShowBMP(0,0,"resourse\\tetris.bmp");
-		iShowBMP(630,150,"resourse\\tetris_2.bmp");
-	}
-
-	//Game Over
 	else if(game_state == 2)
-	{	//Game Over
+	{
 		iShowBMP(0,0,"resourse\\game_over.bmp");
 		iText(470,85,"Press 'end' to quit",GLUT_BITMAP_9_BY_15);
 		iText(420,70,"Press 'M' to return to main menu",GLUT_BITMAP_9_BY_15);
 		iText(460,55,"Press 'P' to play again",GLUT_BITMAP_9_BY_15);
 	}
-	
 	else
 	{
 	//background images
-
 		iShowBMP(0,0,"resourse\\tetris.bmp");
 		iShowBMP(630,150,"resourse\\tetris_2.bmp");
 		iSetColor(255, 255, 255);
-		iText(900,70,"Press 'end' to QUIT",GLUT_BITMAP_9_BY_15);
-		iText(900,83,"Press 'P' to PAUSE",GLUT_BITMAP_9_BY_15);
+		iText(900,70,"Press 'end' to quit",GLUT_BITMAP_9_BY_15);
 
 	//tetromino preview
-
 		iSetColor(255, 255, 255);
 		iText(650, 175, "UP NEXT",GLUT_BITMAP_HELVETICA_18); 
 		iRectangle(630,20,200,150);
 
 		//up next tetromino
-
 		iSetColor(polygon[up_next_poly].r,polygon[up_next_poly].g,polygon[up_next_poly].b);
 			for(i=0;i<n;i++)
 			{
@@ -610,11 +202,11 @@ void iDraw() {
 	//picked tetromino
 		for (i = 0; i < n; i++)
 		{
-			poly_x[i] = players_poly.base_x[i] + shift_x;
-			poly_y[i] = players_poly.base_y[i] + shift_y;
+			poly_x[i] = polygon[chosen_poly_no].base_x[i] + shift_x;
+			poly_y[i] = polygon[chosen_poly_no].base_y[i] + shift_y;
 		}
 
-		iSetColor(players_poly.r, players_poly.g, players_poly.b);
+		iSetColor(polygon[chosen_poly_no].r, polygon[chosen_poly_no].g, polygon[chosen_poly_no].b);
 		for(i=0; i < n; i++)
 		{
 			iFilledRectangle(poly_x[i],poly_y[i],little_block,little_block);
@@ -660,33 +252,14 @@ void iMouseMove(int mx, int my) {
 void iMouse(int button, int state, int mx, int my) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
-		if(game_state == -1)
+		if((mx >= button_coordinate[0].x && mx <= button_coordinate[0].x + 250) && (my >= button_coordinate[0].y && my <= button_coordinate[0].y + 65))
 		{
-			if((mx >= Mstart_button.x && mx <= Mstart_button.x + 250) && (my >= Mstart_button.y && my <= Mstart_button.y + 65))
-			{
-				game_state = 0;
-			}
-			else if((mx >= Mexit_button.x && mx <= Mexit_button.x + 250) && (my >= Mexit_button.y && my <= Mexit_button.y + 65))
-			{
-				exit(0);
-			}
+			game_state = 0;
 		}
-		else if(game_state == 1)
+		else if((mx >= button_coordinate[1].x && mx <= button_coordinate[1].x + 250) && (my >= button_coordinate[1].y && my <= button_coordinate[1].y + 65))
 		{
-			if((mx >= Presume_button.x && mx <= Presume_button.x + 250) && (my >= Presume_button.y && my <= Presume_button.y + 65))
-			{
-				game_state = 0;
-			}
-			else if((mx >= Pexit_button.x && mx <= Pexit_button.x + 250) && (my >= Pexit_button.y && my <= Pexit_button.y + 65))
-			{
-				exit(0);
-			}
-			else if((mx >= Prestart_button.x && mx <= Prestart_button.x + 250) && (my >= Prestart_button.y && my <= Prestart_button.y + 65))
-			{
-				game_state = 0;	
-			}
+			exit(0);
 		}
-		
 	}
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 	}
@@ -698,18 +271,9 @@ void iMouse(int button, int state, int mx, int my) {
 	*/
 void iKeyboard(unsigned char key) {
 	int has_collided_grid = collision_grid_x(poly_x,poly_y);
-	if(key == 'p')
-	{
-		game_state = 1;
-	}
-	else if(key == 'm' && game_state == 2)
-	{
-		game_state = -1;
-	}
-	else if (key == 'w')
+	if (key == 'w')
 	{
 		//will rotate the polygons
-		rotate();
 	}
 	else if ((key == 'a' || key == 'A') && (!collision_left(poly_x) && !has_collided_grid))
 	{
@@ -747,25 +311,13 @@ void iSpecialKeyboard(unsigned char key)
 int main() {
 	srand(time(NULL));
 
-//Main menu
 	//startbutton
-		Mstart_button.x = 425;
-		Mstart_button.y = 445;
+		button_coordinate[0].x = 425;
+		button_coordinate[0].y = 445;
 	//quit button
-		Mexit_button.x = 425;
-		Mexit_button.y = 350;
+		button_coordinate[1].x = 425;
+		button_coordinate[1].y = 350;
 
-//Pause menu
-	//resume button
-		Presume_button.x = 425;
-		Presume_button.y = 415;
-	//restart button
-		Prestart_button.x = 425;
-		Prestart_button.y = 320;
-	//exit button
-		Pexit_button.x = 425;
-		Pexit_button.y = 225;
-			
 	int fall_delay = 800;
 	iSetTimer(fall_delay, gravity);
 
@@ -785,9 +337,9 @@ void gravity()
 			occupied_blocks[no_blocks].x = poly_x[i];
 			occupied_blocks[no_blocks].y = poly_y[i];
 
-			occupied_blocks[no_blocks].r = players_poly.r;
-			occupied_blocks[no_blocks].g = players_poly.g;
-			occupied_blocks[no_blocks].b = players_poly.b;
+			occupied_blocks[no_blocks].r = polygon[chosen_poly_no].r;
+			occupied_blocks[no_blocks].g = polygon[chosen_poly_no].g;
+			occupied_blocks[no_blocks].b = polygon[chosen_poly_no].b;
 
 			no_blocks++;
 		}
@@ -799,7 +351,6 @@ void gravity()
 				return;
 			}
 		}
-		clear_row();
 		spawn();
 	}
 }
