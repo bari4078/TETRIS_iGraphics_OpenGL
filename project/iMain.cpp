@@ -71,7 +71,7 @@ struct button_co_ord
 {
 	int x;
 	int y;
-} Mstart_button,Mexit_button,Pexit_button,Presume_button,Prestart_button;
+} Mstart_button,Mexit_button,Pexit_button,Presume_button,Prestart_button,Minfo_button;
 
 int game_state = -1;
 //game state -1: main menu
@@ -79,7 +79,7 @@ int game_state = -1;
 //game state 1: pause
 //game state 2: game over
 //game state 3: game complete
-
+int about = 0;
 
 int chosen_poly_no = rand() % 7;
 int up_next_poly = rand() % 7;
@@ -108,9 +108,31 @@ int no_blocks=0;
 
 int score = 0;
 char score_text[50];
+char high_score_text[50];
+int high_score = 0;
 
 int fall_delay = 800;
 
+
+void high_score_update()
+{
+	FILE *f_read;
+	f_read = fopen("data.txt","r");
+
+	fscanf(f_read,"%d",&high_score);
+	fclose(f_read);
+
+	if(score > high_score)
+	{
+		high_score = score;
+
+		FILE *f_write;
+		f_write = fopen("data.txt","w");
+
+		fprintf(f_write, "%d", high_score);
+		fclose(f_write);
+	}
+}
 
 void spawn()
 {	
@@ -188,7 +210,7 @@ void rotate()
 {
 	if(chosen_poly_no == 1) return;
 	struct polygons temp_poly = players_poly;
-	
+	int i;
 	//straight tetromino
 	if(chosen_poly_no == 0)
 	{	// straight tetromino
@@ -203,9 +225,25 @@ void rotate()
 			temp_poly.base_x[3] -= 28;
 			temp_poly.base_y[3] -= 28;
 
-			position = (position+1) % 2;
-			players_poly = temp_poly;
-			return;
+
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{
@@ -218,16 +256,30 @@ void rotate()
 			temp_poly.base_x[3] += 28;
 			temp_poly.base_y[3] += 28;
 
-			position = (position+1) % 2;
 
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 
 	}
 	
 	//left L tetromino
-	///HAS A NASTY BUG
 	else if(chosen_poly_no == 2)
 	{	
 		if(position == 0)
@@ -242,9 +294,24 @@ void rotate()
 			temp_poly.base_y[2] = 552;
 			temp_poly.base_y[3] = 552;
 
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{	
@@ -258,9 +325,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 496;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 2)
 		{	
@@ -274,9 +356,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 524;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 3)
 		{	
@@ -290,9 +387,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 552;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 	}
 	
@@ -312,9 +424,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 524;
 
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{	
@@ -328,9 +455,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 496;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 2)
 		{	
@@ -344,9 +486,24 @@ void rotate()
 			temp_poly.base_y[2] = 552;
 			temp_poly.base_y[3] = 552;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 3)
 		{	
@@ -360,9 +517,24 @@ void rotate()
 			temp_poly.base_y[2] = 496;
 			temp_poly.base_y[3] = 496;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 	}
 	
@@ -381,9 +553,24 @@ void rotate()
 			temp_poly.base_y[2] = 496;
 			temp_poly.base_y[3] = 524;
 
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{	
@@ -397,9 +584,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 552;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 2)
 		{	
@@ -413,9 +615,24 @@ void rotate()
 			temp_poly.base_y[2] = 496;
 			temp_poly.base_y[3] = 524;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 3)
 		{	
@@ -429,9 +646,24 @@ void rotate()
 			temp_poly.base_y[2] = 552;
 			temp_poly.base_y[3] = 524;
 			
-			position = (position + 1) % 4;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 4;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 	}
 
@@ -450,9 +682,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 496;
 
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{	
@@ -466,9 +713,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 524;
 			
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 	}
 
@@ -487,9 +749,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 496;
 
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 		else if(position == 1)
 		{	
@@ -503,9 +780,24 @@ void rotate()
 			temp_poly.base_y[2] = 524;
 			temp_poly.base_y[3] = 524;
 			
-			position = (position + 1) % 2;
-			players_poly = temp_poly;
-			return;
+			double *temp_poly_x,*temp_poly_y;
+			temp_poly_x = (double*)malloc(4*sizeof(double));
+			temp_poly_y = (double*)malloc(4*sizeof(double));
+
+			for(i=0; i<4; i++)
+			{
+				temp_poly_x[i] = temp_poly.base_x[i] + shift_x;
+				temp_poly_y[i] = temp_poly.base_y[i] + shift_y;
+			}
+
+			if(!collision_left(temp_poly_x) && !collision_right(temp_poly_x))
+			{
+				position = (position+1) % 2;
+				players_poly = temp_poly;
+				free(temp_poly_x);
+				free(temp_poly_y);
+				return;
+			}
 		}
 	}
 
@@ -631,8 +923,16 @@ void iDraw() {
 	if(game_state == -1)
 	{	//Main Menu
 		iShowBMP(45,0,"resourse\\home_menu_1.bmp");
-		iShowBMP(Mstart_button.x,Mstart_button.y,"resourse\\start.bmp");
-		iShowBMP(Mexit_button.x,Mexit_button.y,"resourse\\exit.bmp");
+		iShowBMP(Minfo_button.x,Minfo_button.y,"resourse\\info_button.bmp");
+		if(about == 0)
+		{
+			iShowBMP(Mstart_button.x,Mstart_button.y,"resourse\\start.bmp");
+			iShowBMP(Mexit_button.x,Mexit_button.y,"resourse\\exit.bmp");
+		}
+		else
+		{
+			iShowBMP(200,200,"resourse\\about.bmp");
+		}
 	}
 
 	//Pause Menu
@@ -649,15 +949,21 @@ void iDraw() {
 	else if(game_state == 2)
 	{	//Game Over
 		iShowBMP(0,0,"resourse\\game_over.bmp");
+		iSetColor(255,255,0);
 		iText(470,85,"Press 'end' to quit",GLUT_BITMAP_9_BY_15);
 
 		iText(420,70,"Press 'M' to return to main menu",GLUT_BITMAP_9_BY_15);
 
 		iText(460,55,"Press 'P' to play again",GLUT_BITMAP_9_BY_15);
 
-		iSetColor(255,255,0);
+		//score
 		sprintf(score_text, "SCORE: %d", score);
 		iText(535, 519, score_text,GLUT_BITMAP_HELVETICA_18); 
+
+		//high score
+		sprintf(high_score_text,"HIGH SCORE: %d",high_score);
+		iText(506,490,high_score_text,GLUT_BITMAP_HELVETICA_18);
+
 	}
 	
 	//Game play
@@ -746,12 +1052,17 @@ void iMouse(int button, int state, int mx, int my) {
 	{
 		if(game_state == -1)
 		{
-			if((mx >= Mstart_button.x && mx <= Mstart_button.x + 250) && (my >= Mstart_button.y && my <= Mstart_button.y + 65))
+			if((mx >= Minfo_button.x && mx <= Minfo_button.x + 56) && (my >= Minfo_button.y && my <= Minfo_button.y + 56))
+			{
+				if(!about) about = 1;
+				else about = 0;
+			}
+			if((mx >= Mstart_button.x && mx <= Mstart_button.x + 250) && (my >= Mstart_button.y && my <= Mstart_button.y + 65) && !about)
 			{
 				game_state = 0;
 				in_game_sound;
 			}
-			else if((mx >= Mexit_button.x && mx <= Mexit_button.x + 250) && (my >= Mexit_button.y && my <= Mexit_button.y + 65))
+			else if((mx >= Mexit_button.x && mx <= Mexit_button.x + 250) && (my >= Mexit_button.y && my <= Mexit_button.y + 65) && !about)
 			{
 				exit(0);
 			}
@@ -856,6 +1167,9 @@ int main() {
 	//quit button
 		Mexit_button.x = 425;
 		Mexit_button.y = 350;
+	//about button
+		Minfo_button.x = 40;
+		Minfo_button.y = 75;
 
 //Pause menu
 	//resume button
@@ -900,6 +1214,7 @@ void gravity()
 			if(occupied_blocks[i].y >= 552)
 			{
 				game_state = 2;
+				high_score_update();
 				game_over_sound;
 				return;
 			}
